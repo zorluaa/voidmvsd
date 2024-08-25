@@ -118,106 +118,12 @@ end)
 
 
 
--- Wall Bang Functionality
-local wallBangEnabled = false
-
-function EnableWallBang()
-    -- empty function for now
-end
-
-local RunService = game:GetService("RunService")
-RunService.Heartbeat:Connect(function()
-    if wallBangEnabled then
-        local Backpack = game:GetService("Players").LocalPlayer.Backpack
-        local gun = nil
-
-        for _, v in pairs(Backpack:GetChildren()) do
-            if v:FindFirstChildWhichIsA("Sound") then
-                gun = v
-                gun.Parent = game:GetService("Players").LocalPlayer.Character
-                break
-            end
-        end
-
-        for _, v in pairs(workspace:GetChildren()) do
-            if v:IsA("Model") and game.Players:FindFirstChild(v.Name) and v.Name ~= game.Players.LocalPlayer.Name then
-                local target = v:FindFirstChild("HumanoidRootPart")
-                if target then
-                    local args = {
-                        [1] = target.Position, -- Target's position
-                        [2] = Vector3.new(0, 0, 0), -- Bullet direction or start point
-                        [3] = target, -- Target part
-                        [4] = target.Position -- End point of the bullet
-                    }
-                    game:GetService("ReplicatedStorage").Remotes.Shoot:FireServer(unpack(args))
-                end
-            end
-        end
-    end
-end)
-
-Main:Toggle('Wall Bang', function(state)
-    wallBangEnabled = state
-    if state then
-        EnableWallBang()
-    end
-end)
 
 
 
 
 
 -- Silent Aim Functionality
-local silentAimEnabled = false
-
-function EnableSilentAim()
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local Camera = game:GetService("Workspace").CurrentCamera
-
-    game:GetService("RunService").Heartbeat:Connect(function()
-        if silentAimEnabled then
-            local closestPlayer = nil
-            local shortestDistance = math.huge
-            
-            for _, player in ipairs(Players:GetPlayers()) do
-                if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    local targetPosition = player.Character.HumanoidRootPart.Position
-                    local screenPosition, onScreen = Camera:WorldToScreenPoint(targetPosition)
-                    
-                    if onScreen then
-                        local distance = (Vector2.new(screenPosition.X, screenPosition.Y) - Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)).magnitude
-                        if distance < shortestDistance then
-                            shortestDistance = distance
-                            closestPlayer = player
-                        end
-                    end
-                end
-            end
-
-            if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                local gun = LocalPlayer.Backpack:FindFirstChildWhichIsA("Tool")
-                if gun then
-                    local target = closestPlayer.Character.HumanoidRootPart
-                    local args = {
-                        [1] = target.Position, -- Target's position
-                        [2] = Vector3.new(0, 0, 0), -- Bullet direction or start point
-                        [3] = target, -- Target part
-                        [4] = target.Position -- End point of the bullet
-                    }
-                    game:GetService("ReplicatedStorage").Remotes.Shoot:FireServer(unpack(args))
-                end
-            end
-        end
-    end)
-end
-
-Main:Toggle('Silent Aim', function(state)
-    silentAimEnabled = state
-    if state then
-        EnableSilentAim()
-    end
-end)
 
 
 
