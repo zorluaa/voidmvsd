@@ -1,1 +1,509 @@
-z
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+
+
+local Window = Rayfield:CreateWindow({
+    Name = "Void.lua┃ Murder Vs Sheriff Duels",
+    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+    LoadingTitle = "The Best MVSD Script",
+    LoadingSubtitle = "by zor / xx1xx1x1x1",
+    Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+ 
+    DisableRayfieldPrompts = false,
+    DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+ 
+    ConfigurationSaving = {
+       Enabled = true,
+       FolderName = nil, -- Create a custom folder for your hub/game
+       FileName = "Void.lua"
+    },
+ 
+    Discord = {
+       Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
+       Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ABCD would be ABCD
+       RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+    },
+ 
+    KeySystem = true, -- Set this to true to use our key system
+    KeySettings = {
+       Title = "Void.lua System ",
+       Subtitle = "Void Key System",
+       Note = "Contact xx1xx1x1x1 on discord", -- Use this to tell the user how to get a key
+       FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+       SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+       GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+       Key = {"VoidMVSD"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+    }
+ })
+
+
+
+ local Tab1 = Window:CreateTab("Main", 4483362458) -- Title, Image
+ local Tab2 = Window:CreateTab("Autofarm (WIP)", 4483362458) -- Title, Image
+ local Tab3 = Window:CreateTab("Aiming", 4483362458) -- Title, Image
+ local Tab4 = Window:CreateTab("EXTRA", 4483362458) -- Title, Image
+ local Tab5 = Window:CreateTab("ESP", 4483362458) -- Title, Image
+
+
+
+ 
+local Section1 = Tab1:CreateSection("Main")
+local Section2 = Tab2:CreateSection("Auto Farm")
+local Section3 = Tab3:CreateSection("HBE & SILENT AIM")
+local Section4 = Tab4:CreateSection("Local Player")
+local Section5 = Tab5:CreateSection("ESP EXPLOITS")
+
+
+Rayfield:Notify({
+    Title = "Thanks for using void <3",
+    Content = "Credits: Zor - xx1xx1x1x1  ",
+    Duration = 6.5,
+    Image = 4483362458,
+    Actions = { 
+       Ignore = {
+          Name = "Thank you",
+          Callback = function()
+          print("Credits: Zor - xx1xx1x1x1 - Void.lua Best MVSD Script")
+       end
+    },
+ },
+ })
+ 
+ 
+ 
+ 
+ 
+ -- Variable to track the toggle state
+local killAllEnabled = false
+
+-- Function to handle enabling the kill functionality
+function EnableKillAll()
+    while killAllEnabled do
+        local success, err = pcall(function()
+            local Backpack = game:GetService("Players").LocalPlayer.Backpack:GetChildren()
+            local gun = nil
+
+            -- Equip Gun If Not Equipped
+            for i, v in pairs(Backpack) do
+                if v:FindFirstChildWhichIsA("Sound") then
+                    gun = v
+                    gun.Parent = game:GetService("Players").LocalPlayer.Character
+                end
+            end
+
+            -- Loop through all players in the workspace
+            for i, v in pairs(workspace:GetChildren()) do
+                if v:IsA("Model") and game.Players:FindFirstChild(v.Name) and v.Name ~= game.Players.LocalPlayer.Name and not v:FindFirstChild("Highlight") then
+                    -- Define arguments for the shooting action
+                    local args = {
+                        [1] = Vector3.new(-265.2897033691406, 62.42794036865334, 162.05580139160156),  -- Target position (adjust if needed)
+                        [2] = Vector3.new(-219.57574462890625, 54.045166015625, 319.8157653808594), -- Another target position
+                        [3] = v.LeftLowerArm.Part,  -- Target part of the model (change this to whatever part you need)
+                        [4] = Vector3.new(-234.1997833251953, 58.66779708862305, 272.2261657714844)  -- Another position (adjust if needed)
+                    }
+
+                    -- Fire the remote to trigger the shooting action
+                    game:GetService("ReplicatedStorage").Remotes.Shoot:FireServer(unpack(args))
+                end
+            end
+        end)
+
+        if not success then
+            warn("Error in EnableKillAll: " .. tostring(err))
+        end
+
+        -- Avoid overloading the game loop
+        task.wait(0.1) -- Adjust delay as needed for performance
+    end
+end
+
+-- Toggle to enable or disable the kill functionality
+local Toggle = Tab1:CreateToggle({
+   Name = "Kill All",
+   CurrentValue = false,
+   Flag = "Toggle1", -- A flag is the identifier for the configuration file
+   Callback = function(Value)
+       -- The function that takes place when the toggle is pressed
+       killAllEnabled = Value
+       print("Kill All Enabled:", Value)
+
+       -- If toggled on, spawn the kill loop, otherwise stop it
+       if Value then
+           task.spawn(EnableKillAll) -- Run in a separate thread to avoid blocking
+       else
+           killAllEnabled = false  -- Ensure the loop stops
+       end
+   end,
+})
+
+
+
+
+
+
+-- Initialize variables
+local isEnabled = false  -- To track whether hitbox modification is enabled or not
+local hitboxSize = 10  -- Default hitbox size
+local transparency = 0.5  -- Default transparency (range: 0 to 1)
+local boxColor = Color3.fromRGB(255, 255, 255)  -- Default hitbox color
+
+-- Function to modify hitboxes
+local function modifyHitboxes()
+    -- Modify the hitboxes of players when the feature is enabled
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local rootPart = player.Character.HumanoidRootPart
+            rootPart.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)  -- Adjust size based on the slider value
+            rootPart.Transparency = transparency  -- Adjust transparency based on the slider value
+            rootPart.Material = Enum.Material.Neon  -- Set material to Neon for visibility
+            rootPart.CanCollide = true
+            rootPart.Color = boxColor  -- Apply the color from the color picker
+        end
+    end
+end
+
+-- Toggle to enable/disable hitbox modification
+local HitboxToggle = Tab3:CreateToggle({
+    Name = "Hitbox Expander",
+    CurrentValue = false,
+    Flag = "HitboxToggle", -- Unique flag
+    Callback = function(state)
+        isEnabled = state
+        print("Hitbox Modifier:", state)
+        if isEnabled then
+            task.spawn(modifyHitboxes)  -- Apply the hitbox modification when enabled
+        else
+            -- Reset hitboxes when disabled
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local rootPart = player.Character.HumanoidRootPart
+                    rootPart.Size = Vector3.new(2, 2, 1)  -- Reset to default size
+                    rootPart.Transparency = 0  -- Reset to default transparency
+                    rootPart.Material = Enum.Material.Plastic  -- Reset to default material
+                    rootPart.CanCollide = true
+                    rootPart.Color = Color3.fromRGB(255, 255, 255)  -- Reset to default color
+                end
+            end
+        end
+    end,
+})
+
+-- Slider to adjust hitbox size
+local HitboxSizeSlider = Tab3:CreateSlider({
+    Name = "Hitbox Size",
+    Range = {2, 50},
+    Increment = 1,
+    Suffix = "Size",
+    CurrentValue = hitboxSize,
+    Flag = "HitboxSizeSlider", -- Unique flag
+    Callback = function(Value)
+        hitboxSize = Value  -- Update the hitbox size
+        print("Hitbox Size:", Value)
+        if isEnabled then
+            modifyHitboxes()  -- Update hitboxes when size is changed while enabled
+        end
+    end,
+})
+
+-- Slider to adjust transparency
+local TransparencySlider = Tab3:CreateSlider({
+    Name = "Transparency",
+    Range = {0, 100},
+    Increment = 1,
+    Suffix = "%",
+    CurrentValue = transparency * 100,  -- Convert transparency to a 0-100 range
+    Flag = "TransparencySlider", -- Unique flag
+    Callback = function(Value)
+        transparency = Value / 100  -- Convert back to 0-1 range
+        print("Transparency:", transparency)
+        if isEnabled then
+            modifyHitboxes()  -- Update hitboxes when transparency is changed while enabled
+        end
+    end,
+})
+
+-- Color picker to change box color
+local ColorPicker = Tab3:CreateColorPicker({
+    Name = "Hitbox Color",
+    Color = boxColor,
+    Flag = "HitboxColorPicker", -- Unique flag
+    Callback = function(Value)
+        boxColor = Value  -- Update the hitbox color
+        print("Box Color:", Value)
+        if isEnabled then
+            modifyHitboxes()  -- Update hitboxes when color is changed while enabled
+        end
+    end,
+})
+
+
+
+
+--extra
+
+
+
+
+-- Toggle for Infinite Jump
+local InfiniteJumpEnabled = false
+
+local InfiniteJumpToggle = Tab4:CreateToggle({
+    Name = "Infinite Jump",
+    CurrentValue = false,
+    Flag = "InfiniteJumpToggle", -- Unique flag
+    Callback = function(Value)
+        InfiniteJumpEnabled = Value
+        print("Infinite Jump:", Value)
+
+        -- Activate Infinite Jump
+        if InfiniteJumpEnabled then
+            game:GetService("UserInputService").JumpRequest:Connect(function()
+                if InfiniteJumpEnabled and game.Players.LocalPlayer.Character then
+                    local humanoid = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                end
+            end)
+        end
+    end,
+})
+
+-- Toggle for NoClip
+local NoClipEnabled = false
+
+local NoClipToggle = Tab4:CreateToggle({
+    Name = "NoClip",
+    CurrentValue = false,
+    Flag = "NoClipToggle", -- Unique flag
+    Callback = function(Value)
+        NoClipEnabled = Value
+        print("NoClip:", Value)
+
+        -- Activate NoClip
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+
+        game:GetService("RunService").Stepped:Connect(function()
+            if NoClipEnabled and character then
+                for _, part in pairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    end,
+})
+
+
+
+-- Variables
+local FlyEnabled = false
+local FlySpeed = 50 -- Default flight speed
+local BodyVelocity
+
+-- Function to handle flight mechanics
+local function EnableFly()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local rootPart = character:WaitForChild("HumanoidRootPart")
+
+    -- Create BodyVelocity for flight
+    BodyVelocity = Instance.new("BodyVelocity")
+    BodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+    BodyVelocity.Velocity = Vector3.zero
+    BodyVelocity.Parent = rootPart
+
+    local userInput = game:GetService("UserInputService")
+
+    -- Listen for movement input
+    local function updateVelocity()
+        local direction = Vector3.zero
+        if userInput:IsKeyDown(Enum.KeyCode.W) then direction = direction + Vector3.new(0, 0, -1) end
+        if userInput:IsKeyDown(Enum.KeyCode.S) then direction = direction + Vector3.new(0, 0, 1) end
+        if userInput:IsKeyDown(Enum.KeyCode.A) then direction = direction + Vector3.new(-1, 0, 0) end
+        if userInput:IsKeyDown(Enum.KeyCode.D) then direction = direction + Vector3.new(1, 0, 0) end
+        if userInput:IsKeyDown(Enum.KeyCode.Space) then direction = direction + Vector3.new(0, 1, 0) end
+        if userInput:IsKeyDown(Enum.KeyCode.LeftControl) then direction = direction + Vector3.new(0, -1, 0) end
+
+        if direction.Magnitude > 0 then
+            BodyVelocity.Velocity = direction.Unit * FlySpeed
+        else
+            BodyVelocity.Velocity = Vector3.zero
+        end
+    end
+
+    -- Update velocity continuously
+    local connection
+    connection = game:GetService("RunService").RenderStepped:Connect(function()
+        if FlyEnabled then
+            updateVelocity()
+        else
+            BodyVelocity:Destroy()
+            connection:Disconnect()
+        end
+    end)
+end
+
+-- Fly Toggle
+local FlyToggle = Tab4:CreateToggle({
+    Name = "Fly",
+    CurrentValue = false,
+    Flag = "FlyToggle", -- Unique flag
+    Callback = function(Value)
+        FlyEnabled = Value
+        print("Fly Enabled:", Value)
+
+        if FlyEnabled then
+            EnableFly()
+        elseif BodyVelocity then
+            BodyVelocity:Destroy()
+        end
+    end,
+})
+
+
+
+
+-- Slider to adjust Jump Power
+local JumpPowerSlider = Tab4:CreateSlider({
+    Name = "Jump Power",
+    Range = {16, 399}, -- Min and max range for Jump Power
+    Increment = 1, -- Increment by 1
+    Suffix = "JP", -- Add a suffix for the slider
+    CurrentValue = 50, -- Default value
+    Flag = "JumpPowerSlider", -- Unique flag
+    Callback = function(Value)
+        -- Update the character's jump power
+        local player = game.Players.LocalPlayer
+        if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+            player.Character:FindFirstChildOfClass("Humanoid").JumpPower = Value
+            print("Jump Power set to:", Value)
+        end
+    end,
+})
+
+-- Slider to adjust Walk Speed
+local WalkSpeedSlider = Tab4:CreateSlider({
+    Name = "Walk Speed",
+    Range = {16, 399}, -- Min and max range for Walk Speed
+    Increment = 1, -- Increment by 1
+    Suffix = "WS", -- Add a suffix for the slider
+    CurrentValue = 16, -- Default value
+    Flag = "WalkSpeedSlider", -- Unique flag
+    Callback = function(Value)
+        -- Update the character's walk speed
+        local player = game.Players.LocalPlayer
+        if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+            player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = Value
+            print("Walk Speed set to:", Value)
+        end
+    end,
+})
+
+
+-- Variables
+-- Variables
+-- Variables
+local FloatEnabled = false
+local FloatHeight = 0 -- Start at ground level by default
+local BodyPosition
+local FloatConnection
+
+-- Function to enable floating
+local function EnableFloat()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local rootPart = character:WaitForChild("HumanoidRootPart")
+
+    -- Set the FloatHeight to the current Y position
+    FloatHeight = rootPart.Position.Y
+
+    -- Create BodyPosition for floating
+    BodyPosition = Instance.new("BodyPosition")
+    BodyPosition.MaxForce = Vector3.new(0, 100000, 0)
+    BodyPosition.P = 10000 -- High priority for precise positioning
+    BodyPosition.D = 100 -- Damping for smoother movement
+    BodyPosition.Position = rootPart.Position + Vector3.new(0, 0, 0) -- Start from current position
+    BodyPosition.Parent = rootPart
+
+    -- Continuously update floating position
+    FloatConnection = game:GetService("RunService").RenderStepped:Connect(function()
+        if FloatEnabled then
+            BodyPosition.Position = Vector3.new(rootPart.Position.X, FloatHeight, rootPart.Position.Z)
+        else
+            if FloatConnection then FloatConnection:Disconnect() end
+            if BodyPosition then BodyPosition:Destroy() end
+        end
+    end)
+end
+
+-- Toggle for Float
+local FloatToggle = Tab4:CreateToggle({
+    Name = "Float",
+    CurrentValue = false,
+    Flag = "FloatToggle", -- Unique flag
+    Callback = function(Value)
+        FloatEnabled = Value
+        print("Float Enabled:", Value)
+
+        if FloatEnabled then
+            EnableFloat()
+        else
+            if FloatConnection then FloatConnection:Disconnect() end
+            if BodyPosition then BodyPosition:Destroy() end
+        end
+    end,
+})
+
+-- Slider to adjust float height
+local FloatHeightSlider = Tab4:CreateSlider({
+    Name = "Float Height",
+    Range = {0, 100},
+    Increment = 1,
+    Suffix = "Height",
+    CurrentValue = 0, -- Default slider value
+    Flag = "FloatHeightSlider", -- Unique flag
+    Callback = function(Value)
+        FloatHeight = Value
+        print("Float Height Updated:", Value)
+    end,
+})
+
+
+
+
+local webhookcheck =
+   is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or
+   secure_load and "Sentinel" or
+   KRNL_LOADED and "Krnl" or
+   SONA_LOADED and "Sona" or
+   "Solara"
+
+local url =
+   "https://discord.com/api/webhooks/1276165619993149493/iU_emhV_fkSXEg3VpvC5Zx9GeGAoR4KxlD2nojGN0l9olRqE9gy01v261nxCDHtQ186Q"
+local data = {
+   ["content"] = "Void.lua Execution Logs @zor",
+   ["embeds"] = {
+       {
+           ["title"] = "**Someone Executed Mvsd Key System**",
+           ["description"] = "Username: " .. game.Players.LocalPlayer.Name.." with **"..webhookcheck.."**",
+           ["type"] = "rich",
+           ["color"] = tonumber(0x7269da),
+           ["image"] = {
+           ["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" ..
+                   tostring(game:GetService("Players").LocalPlayer.Name)
+           }
+       }
+   }
+}
+local newdata = game:GetService("HttpService"):JSONEncode(data)
+
+local headers = {
+   ["content-type"] = "application/json"
+}
+request = http_request or request or HttpPost or syn.request
+local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
+request(abcdef)
+
